@@ -641,7 +641,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = N4H3KUZN2C;
 				GENERATE_INFOPLIST_FILE = NO;
-				INFOPLIST_FILE = GuardianLiveActivityExtension-Info.plist;
+				INFOPLIST_FILE = "GuardianLiveActivityExtension-Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 26.4;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -668,7 +668,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = N4H3KUZN2C;
 				GENERATE_INFOPLIST_FILE = NO;
-				INFOPLIST_FILE = GuardianLiveActivityExtension-Info.plist;
+				INFOPLIST_FILE = "GuardianLiveActivityExtension-Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 26.4;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",

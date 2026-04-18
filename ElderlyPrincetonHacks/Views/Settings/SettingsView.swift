@@ -4,6 +4,14 @@ struct SettingsView: View {
     @Bindable var state: AppState
     @State private var openAIKey = ""
     @State private var elevenLabsKey = ""
+    @State private var k2ThinkKey = ""
+    @State private var k2ThinkBaseURL = ""
+    @State private var k2ThinkModel = ""
+
+    private var aiConfigured: Bool {
+        let hasLLM = !openAIKey.isEmpty || !k2ThinkKey.isEmpty
+        return hasLLM && !elevenLabsKey.isEmpty
+    }
 
     var body: some View {
         NavigationStack {
@@ -37,7 +45,39 @@ struct SettingsView: View {
             .onAppear {
                 openAIKey = state.openAIKey
                 elevenLabsKey = state.elevenLabsKey
+                k2ThinkKey = state.k2ThinkAPIKey
+                k2ThinkBaseURL = state.k2ThinkBaseURL
+                k2ThinkModel = UserDefaults.standard.string(forKey: "k2_think_model") ?? ""
             }
+            .overlay {
+                if state.isRecalibratingGait {
+                    ZStack {
+                        Color.black.opacity(0.42).ignoresSafeArea()
+
+                        VStack(spacing: 18) {
+                            Text("LIVE GAIT CALIBRATION")
+                                .font(.system(size: 12, weight: .bold, design: .monospaced))
+                                .tracking(2)
+                                .foregroundColor(.white.opacity(0.92))
+
+                            Text("Walk normally — we’re recording cadence, acceleration variance, and tilt.")
+                                .font(.system(size: 12, weight: .medium))
+                                .foregroundColor(.white.opacity(0.78))
+                                .multilineTextAlignment(.center)
+                                .padding(.horizontal, 8)
+
+                            GaitCalibrationLiveSensorsView(state: state)
+
+                            ProgressView()
+                                .tint(Theme.accent)
+                                .scaleEffect(1.15)
+                        }
+                        .padding(22)
+                    }
+                    .transition(.opacity)
+                }
+            }
+            .animation(Theme.smoothTransition, value: state.isRecalibratingGait)
         }
     }
 
@@ -112,27 +152,52 @@ struct SettingsView: View {
                     Spacer()
 
                     LEDIndicator(
-                        status: (!openAIKey.isEmpty && !elevenLabsKey.isEmpty) ? .active : .offline,
+                        status: aiConfigured ? .active : .offline,
                         size: 6,
                         showLabel: false
                     )
                 }
 
-                NeuInput(placeholder: "OpenAI API Key", text: $openAIKey, icon: "brain", isSecure: true)
+                NeuInput(placeholder: "K2 / Kimi API Key (reasoning)", text: $k2ThinkKey, icon: "brain.head.profile", isSecure: true)
+                    .onChange(of: k2ThinkKey) { _, newValue in
+                        state.k2ThinkAPIKey = newValue
+                    }
+
+                NeuInput(
+                    placeholder: "K2 base URL (optional, default Moonshot)",
+                    text: $k2ThinkBaseURL,
+                    icon: "link",
+                    isSecure: false
+                )
+                .onChange(of: k2ThinkBaseURL) { _, newValue in
+                    state.k2ThinkBaseURL = newValue
+                }
+
+                NeuInput(
+                    placeholder: "Model id (empty = \(Constants.API.k2ThinkDefaultModel))",
+                    text: $k2ThinkModel,
+                    icon: "cpu",
+                    isSecure: false
+                )
+                .onChange(of: k2ThinkModel) { _, newValue in
+                    state.k2ThinkModel = newValue
+                }
+
+                NeuInput(placeholder: "OpenAI API Key (fallback dispatch copy)", text: $openAIKey, icon: "brain", isSecure: true)
                     .onChange(of: openAIKey) { _, newValue in
                         state.openAIKey = newValue
                     }
 
-                NeuInput(placeholder: "ElevenLabs API Key", text: $elevenLabsKey, icon: "waveform", isSecure: true)
+                NeuInput(placeholder: "ElevenLabs API Key (TTS + Scribe STT)", text: $elevenLabsKey, icon: "waveform", isSecure: true)
                     .onChange(of: elevenLabsKey) { _, newValue in
                         state.elevenLabsKey = newValue
                     }
 
-                Text("Optional: Enable AI-powered voice dispatch. Falls back to Apple TTS if not set.")
+                Text("K2 interprets “I need help” vs “I don’t need help” after Scribe transcribes the mic clip. OpenAI is only used if K2 is unset.")
                     .font(.system(size: 11, weight: .medium))
                     .foregroundColor(Theme.textMuted)
 
-                Text("Keep keys out of git: store them in local build settings or runtime input only, and never hardcode in source.")
+                Text("Never commit API keys. Paste keys here on-device for the demo, or use a local xcconfig that stays gitignored.")
                     .font(.system(size: 10, weight: .medium))
                     .foregroundColor(Theme.textMuted.opacity(0.8))
             }

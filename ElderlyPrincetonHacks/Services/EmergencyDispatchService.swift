@@ -39,8 +39,13 @@ final class EmergencyDispatchService: ObservableObject {
         )
 
         dispatchStatus = "Speaking emergency alert..."
-        AIAgentService.shared.speakPrompt(message)
-        try? await Task.sleep(for: .seconds(3))
+        let elevenKey = UserDefaults.standard.string(forKey: "elevenlabs_key") ?? ""
+        if !elevenKey.isEmpty {
+            await AIAgentService.shared.speakWithElevenLabs(message)
+        } else {
+            AIAgentService.shared.speakPrompt(message)
+            try? await Task.sleep(for: .seconds(3))
+        }
 
         dispatchStatus = "Calling emergency contact..."
         callEmergencyNumber()

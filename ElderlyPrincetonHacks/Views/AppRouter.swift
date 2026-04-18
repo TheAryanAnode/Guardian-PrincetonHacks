@@ -1,4 +1,5 @@
 import SwiftUI
+import UserNotifications
 
 struct AppRouter: View {
     @Bindable var state: AppState
@@ -26,6 +27,9 @@ struct AppRouter: View {
         .onOpenURL { url in
             guard url.scheme == "guardian", url.host == "cancel-alert" else { return }
             state.dismissFallAlert(outcome: .cancelledByUser)
+        }
+        .task {
+            _ = try? await UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge])
         }
     }
 }

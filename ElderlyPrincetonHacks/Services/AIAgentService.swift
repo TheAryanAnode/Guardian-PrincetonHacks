@@ -15,8 +15,9 @@ final class AIAgentService: ObservableObject {
 
     var hasAPIKeys: Bool {
         let openAI = UserDefaults.standard.string(forKey: "openai_key") ?? ""
+        let k2 = UserDefaults.standard.string(forKey: "k2_think_key") ?? ""
         let elevenLabs = UserDefaults.standard.string(forKey: "elevenlabs_key") ?? ""
-        return !openAI.isEmpty && !elevenLabs.isEmpty
+        return !elevenLabs.isEmpty && (!openAI.isEmpty || !k2.isEmpty)
     }
 
     // MARK: - Voice Prompt (Fallback: Apple TTS)
@@ -50,6 +51,21 @@ final class AIAgentService: ObservableObject {
         speakPrompt(prompt)
     }
 
+    /// Clear phrases improve on-device STT + ElevenLabs Scribe fusion, then K2 reasoning.
+    func speakFallCheckPromptAsync(userName: String) async {
+        let prompt = """
+        \(userName), Guardian detected a possible fall. If you are okay, clearly say: I don't need help. \
+        If you need assistance, say: I need help.
+        """
+        let elevenLabsKey = UserDefaults.standard.string(forKey: "elevenlabs_key") ?? ""
+        if !elevenLabsKey.isEmpty {
+            await speakWithElevenLabs(prompt)
+        } else {
+            speakPrompt(prompt)
+            try? await Task.sleep(for: .seconds(6))
+        }
+    }
+
     func speakEmergencyDispatch(userName: String, location: String) {
         let prompt = "Dispatching emergency services for \(userName) at location \(location). Help is on the way."
         speakPrompt(prompt)
@@ -63,11 +79,6 @@ final class AIAgentService: ObservableObject {
     // MARK: - OpenAI Integration (when API key available)
 
     func generateContextualMessage(event: FallEvent, profile: UserProfile, location: String) async -> String {
-        let openAIKey = UserDefaults.standard.string(forKey: "openai_key") ?? ""
-        guard !openAIKey.isEmpty else {
-            return buildFallbackMessage(event: event, profile: profile, location: location)
-        }
-
         let systemPrompt = """
         You are an emergency medical dispatcher AI. Generate a brief, calm emergency message \
         based on the fall detection data provided. Include the person's name, location, \
@@ -83,6 +94,31 @@ final class AIAgentService: ObservableObject {
         No movement for \(Int(event.stillnessDuration)) seconds.
         Severity: \(event.severity.rawValue).
         """
+
+        let k2Key = UserDefaults.standard.string(forKey: "k2_think_key") ?? ""
+        if !k2Key.isEmpty {
+            let baseRaw = UserDefaults.standard.string(forKey: "k2_think_base_url") ?? ""
+            let base = baseRaw.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+                ? Constants.API.k2ThinkDefaultBaseURL
+                : baseRaw
+            let modelStored = UserDefaults.standard.string(forKey: "k2_think_model") ?? ""
+            let model = modelStored.isEmpty ? Constants.API.k2ThinkDefaultModel : modelStored
+            if let content = await K2ThinkClient.chatCompletionJSON(
+                apiKey: k2Key,
+                baseURL: base,
+                model: model,
+                systemPrompt: systemPrompt,
+                userPrompt: userPrompt
+            )?.trimmingCharacters(in: .whitespacesAndNewlines),
+               !content.isEmpty {
+                return content
+            }
+        }
+
+        let openAIKey = UserDefaults.standard.string(forKey: "openai_key") ?? ""
+        guard !openAIKey.isEmpty else {
+            return buildFallbackMessage(event: event, profile: profile, location: location)
+        }
 
         do {
             let url = URL(string: "\(Constants.API.openAIBaseURL)/chat/completions")!

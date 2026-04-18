@@ -16,6 +16,8 @@ final class AudioClassificationService: ObservableObject {
     private var speechRecognizer: SFSpeechRecognizer?
     private var recognitionRequest: SFSpeechAudioBufferRecognitionRequest?
     private var recognitionTask: SFSpeechRecognitionTask?
+    private var recordingFile: AVAudioFile?
+    private var recordingURL: URL?
 
     private init() {
         speechRecognizer = SFSpeechRecognizer(locale: Locale(identifier: "en-US"))
@@ -74,10 +76,16 @@ final class AudioClassificationService: ObservableObject {
         let recordingFormat = inputNode.outputFormat(forBus: 0)
         inputNode.removeTap(onBus: 0)
 
+        recordingFile = nil
+        let captureURL = FileManager.default.temporaryDirectory.appendingPathComponent("guardian-voice-\(UUID().uuidString).caf")
+        recordingURL = captureURL
+        recordingFile = try? AVAudioFile(forWriting: captureURL, settings: recordingFormat.settings)
+
         var peakAmplitude: Float = 0
 
         inputNode.installTap(onBus: 0, bufferSize: 1024, format: recordingFormat) { buffer, _ in
             self.recognitionRequest?.append(buffer)
+            try? self.recordingFile?.write(from: buffer)
 
             let channelData = buffer.floatChannelData?[0]
             let frameLength = Int(buffer.frameLength)
@@ -123,9 +131,29 @@ final class AudioClassificationService: ObservableObject {
         impactDetected = hasImpact
         audioConfidence = confidence
 
+        recordingFile = nil
+
+        let appleLine = (finalTranscription ?? detectedSpeech)
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+
+        let elevenKey = UserDefaults.standard.string(forKey: "elevenlabs_key") ?? ""
+        var merged = appleLine
+        if !elevenKey.isEmpty, let url = recordingURL, FileManager.default.fileExists(atPath: url.path) {
+            if let elText = try? await ElevenLabsTranscriptionService.transcribe(fileURL: url, apiKey: elevenKey) {
+                let trimmed = elText.trimmingCharacters(in: .whitespacesAndNewlines)
+                if trimmed.count >= merged.count {
+                    merged = trimmed
+                }
+            }
+            try? FileManager.default.removeItem(at: url)
+        }
+        recordingURL = nil
+
+        let speechOut: String? = merged.isEmpty ? nil : merged
+
         return AudioResult(
             impactDetected: hasImpact,
-            speechDetected: finalTranscription,
+            speechDetected: speechOut,
             confidence: confidence
         )
     }
@@ -140,6 +168,11 @@ final class AudioClassificationService: ObservableObject {
         recognitionTask = nil
         recognitionRequest = nil
         audioEngine = nil
+        recordingFile = nil
+        if let recordingURL {
+            try? FileManager.default.removeItem(at: recordingURL)
+        }
+        recordingURL = nil
         isListening = false
     }
 }
@@ -150,14 +183,26 @@ struct AudioResult {
     let confidence: Double
 
     var containsHelpRequest: Bool {
-        guard let speech = speechDetected?.lowercased() else { return false }
-        let helpKeywords = ["help", "no", "fallen", "hurt", "pain", "emergency", "call"]
+        let speech = speechDetected?.lowercased() ?? ""
+        if speech.contains("don't need help") || speech.contains("dont need help") || speech.contains("do not need help") {
+            return false
+        }
+        if speech.contains("i need help") || speech.contains("need help") || speech.contains("send help") {
+            return true
+        }
+        let helpKeywords = ["fallen", "hurt", "pain", "emergency", "ambulance", "call 911", "call for help"]
         return helpKeywords.contains { speech.contains($0) }
     }
 
     var containsDismissal: Bool {
-        guard let speech = speechDetected?.lowercased() else { return false }
-        let okKeywords = ["yes", "okay", "ok", "fine", "i'm fine", "i'm ok", "good", "alright"]
+        let speech = speechDetected?.lowercased() ?? ""
+        if speech.contains("don't need help") || speech.contains("dont need help") || speech.contains("do not need help") {
+            return true
+        }
+        let okKeywords = [
+            "yes", "yeah", "yep", "okay", "ok", "fine", "i'm fine", "im fine",
+            "i'm ok", "im ok", "good", "alright", "all good", "false alarm"
+        ]
         return okKeywords.contains { speech.contains($0) }
     }
 }

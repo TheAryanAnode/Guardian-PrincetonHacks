@@ -49,12 +49,57 @@ final class AppState {
         set { UserDefaults.standard.set(newValue, forKey: "elevenlabs_key") }
     }
 
+    /// Kimi K2 Thinking (OpenAI-compatible). Optional override URL if your key is routed through another gateway.
+    var k2ThinkAPIKey: String {
+        get { UserDefaults.standard.string(forKey: "k2_think_key") ?? "" }
+        set { UserDefaults.standard.set(newValue, forKey: "k2_think_key") }
+    }
+
+    var k2ThinkBaseURL: String {
+        get { UserDefaults.standard.string(forKey: "k2_think_base_url") ?? "" }
+        set { UserDefaults.standard.set(newValue, forKey: "k2_think_base_url") }
+    }
+
+    var k2ThinkModel: String {
+        get { UserDefaults.standard.string(forKey: "k2_think_model") ?? "" }
+        set { UserDefaults.standard.set(newValue, forKey: "k2_think_model") }
+    }
+
+    var resolvedK2ThinkModel: String {
+        let stored = k2ThinkModel.trimmingCharacters(in: .whitespacesAndNewlines)
+        return stored.isEmpty ? Constants.API.k2ThinkDefaultModel : stored
+    }
+
     // MARK: - Init
 
     init() {
+        seedDemoAPIKeysIfNeeded()
         loadProfile()
         loadFallHistory()
         loadGaitHistory()
+    }
+
+    private func seedDemoAPIKeysIfNeeded() {
+        // Only auto-fill if the user hasn't entered their own keys yet.
+        if openAIKey.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            // keep OpenAI empty by default (K2 is preferred)
+        }
+
+        if elevenLabsKey.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            elevenLabsKey = Constants.API.defaultElevenLabsAPIKey
+        }
+
+        if k2ThinkAPIKey.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            k2ThinkAPIKey = Constants.API.defaultK2ThinkAPIKey
+        }
+
+        if k2ThinkBaseURL.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            k2ThinkBaseURL = Constants.API.k2ThinkDefaultBaseURL
+        }
+
+        if k2ThinkModel.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            k2ThinkModel = Constants.API.k2ThinkDefaultModel
+        }
     }
 
     // MARK: - Fall Events

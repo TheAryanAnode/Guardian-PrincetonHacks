@@ -165,6 +165,7 @@ final class FallDetectionEngine {
 
         state.activeFallEvent = event
         state.showFallAlert = true
+        LocalNotificationService.notifyPossibleFall(severity: severity, peakAcceleration: peakAccel)
         LiveActivityManager.shared.updateActivity(
             status: .alert,
             gaitScore: Int(state.currentGaitScore),

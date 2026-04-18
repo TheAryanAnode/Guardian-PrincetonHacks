@@ -25,7 +25,7 @@ struct FallAlertView: View {
                             .padding(.horizontal, 20)
 
                         if showVoiceCheck {
-                            FallConfirmationView(state: state)
+                            FallConfirmationView(state: state, fallEvent: fallEvent)
                                 .padding(.horizontal, 20)
                                 .transition(.opacity.combined(with: .scale(scale: 0.9)))
                         }
