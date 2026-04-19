@@ -16,6 +16,8 @@ final class AudioClassificationService: ObservableObject {
     private var speechRecognizer: SFSpeechRecognizer?
     private var recognitionRequest: SFSpeechAudioBufferRecognitionRequest?
     private var recognitionTask: SFSpeechRecognitionTask?
+    private var recordingFile: AVAudioFile?
+    private var recordingURL: URL?
 
     private init() {
         speechRecognizer = SFSpeechRecognizer(locale: Locale(identifier: "en-US"))
@@ -74,10 +76,16 @@ final class AudioClassificationService: ObservableObject {
         let recordingFormat = inputNode.outputFormat(forBus: 0)
         inputNode.removeTap(onBus: 0)
 
+        recordingFile = nil
+        let captureURL = FileManager.default.temporaryDirectory.appendingPathComponent("guardian-voice-\(UUID().uuidString).caf")
+        recordingURL = captureURL
+        recordingFile = try? AVAudioFile(forWriting: captureURL, settings: recordingFormat.settings)
+
         var peakAmplitude: Float = 0
 
         inputNode.installTap(onBus: 0, bufferSize: 1024, format: recordingFormat) { buffer, _ in
             self.recognitionRequest?.append(buffer)
+            try? self.recordingFile?.write(from: buffer)
 
             let channelData = buffer.floatChannelData?[0]
             let frameLength = Int(buffer.frameLength)
@@ -123,9 +131,29 @@ final class AudioClassificationService: ObservableObject {
         impactDetected = hasImpact
         audioConfidence = confidence
 
+        recordingFile = nil
+
+        let appleLine = (finalTranscription ?? detectedSpeech)
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+
+        let elevenKey = UserDefaults.standard.string(forKey: "elevenlabs_key") ?? ""
+        var merged = appleLine
+        if !elevenKey.isEmpty, let url = recordingURL, FileManager.default.fileExists(atPath: url.path) {
+            if let elText = try? await ElevenLabsTranscriptionService.transcribe(fileURL: url, apiKey: elevenKey) {
+                let trimmed = elText.trimmingCharacters(in: .whitespacesAndNewlines)
+                if trimmed.count >= merged.count {
+                    merged = trimmed
+                }
+            }
+            try? FileManager.default.removeItem(at: url)
+        }
+        recordingURL = nil
+
+        let speechOut: String? = merged.isEmpty ? nil : merged
+
         return AudioResult(
             impactDetected: hasImpact,
-            speechDetected: finalTranscription,
+            speechDetected: speechOut,
             confidence: confidence
         )
     }
@@ -140,6 +168,11 @@ final class AudioClassificationService: ObservableObject {
         recognitionTask = nil
         recognitionRequest = nil
         audioEngine = nil
+        recordingFile = nil
+        if let recordingURL {
+            try? FileManager.default.removeItem(at: recordingURL)
+        }
+        recordingURL = nil
         isListening = false
     }
 }
@@ -149,15 +182,68 @@ struct AudioResult {
     let speechDetected: String?
     let confidence: Double
 
-    var containsHelpRequest: Bool {
-        guard let speech = speechDetected?.lowercased() else { return false }
-        let helpKeywords = ["help", "no", "fallen", "hurt", "pain", "emergency", "call"]
-        return helpKeywords.contains { speech.contains($0) }
+    /// Strict phrase / word-boundary matching so STT noise doesn’t trigger false cancels (e.g. “ok” inside other words).
+    var fallVoiceIntent: FallVoiceIntent? {
+        guard let raw = speechDetected?.trimmingCharacters(in: .whitespacesAndNewlines),
+              raw.count >= 3 else { return nil }
+        let text = raw.lowercased()
+        if VoiceCommandMatcher.matchesAny(text, patterns: VoiceCommandMatcher.cancelPatterns) {
+            return .cancel
+        }
+        if VoiceCommandMatcher.matchesAny(text, patterns: VoiceCommandMatcher.helpPatterns) {
+            return .requestHelp
+        }
+        return nil
     }
 
-    var containsDismissal: Bool {
-        guard let speech = speechDetected?.lowercased() else { return false }
-        let okKeywords = ["yes", "okay", "ok", "fine", "i'm fine", "i'm ok", "good", "alright"]
-        return okKeywords.contains { speech.contains($0) }
+    var containsHelpRequest: Bool { fallVoiceIntent == .requestHelp }
+
+    var containsDismissal: Bool { fallVoiceIntent == .cancel }
+}
+
+enum FallVoiceIntent {
+    case cancel
+    case requestHelp
+}
+
+private enum VoiceCommandMatcher {
+    /// Checked first: cancel / I’m OK / don’t need help
+    static let cancelPatterns: [String] = [
+        "\\bcancel\\b",
+        "\\bnever\\s+mind\\b",
+        "\\bfalse\\s+alarm\\b",
+        "\\bi\\s*'?m\\s+ok\\b",
+        "\\bi\\s+am\\s+ok\\b",
+        "\\bim\\s+ok\\b",
+        "\\bdon'?t\\s+need\\s+help\\b",
+        "\\bdont\\s+need\\s+help\\b",
+        "\\bdo\\s+not\\s+need\\s+help\\b",
+        "\\bno\\s+help\\b",
+        "\\bi'?m\\s+fine\\b",
+        "\\bi\\s+am\\s+fine\\b",
+        "\\ball\\s+good\\b"
+    ]
+
+    static let helpPatterns: [String] = [
+        "\\bhelp\\s+me\\b",
+        "\\bi\\s+need\\s+help\\b",
+        "\\bneed\\s+help\\b",
+        "\\bget\\s+help\\b",
+        "\\bsend\\s+help\\b",
+        "\\bcall\\s+for\\s+help\\b",
+        "\\bcall\\s+911\\b",
+        "\\b911\\b",
+        "\\bemergency\\b",
+        "\\bambulance\\b"
+    ]
+
+    static func matchesAny(_ text: String, patterns: [String]) -> Bool {
+        patterns.contains { matches(text, pattern: $0) }
+    }
+
+    private static func matches(_ text: String, pattern: String) -> Bool {
+        guard let re = try? NSRegularExpression(pattern: pattern, options: []) else { return false }
+        let range = NSRange(text.startIndex..., in: text)
+        return re.firstMatch(in: text, options: [], range: range) != nil
     }
 }

@@ -299,6 +299,11 @@ struct OnboardingView: View {
                         .multilineTextAlignment(.center)
                 }
 
+                if isCalibrating {
+                    GaitCalibrationLiveSensorsView(state: state)
+                        .padding(.horizontal, 4)
+                }
+
                 if !isCalibrating && calibrationProgress < 1.0 {
                     NeuButton(title: "Start Calibration", icon: "figure.walk", variant: .primary) {
                         startCalibration()

@@ -10,18 +10,23 @@ final class AIAgentService: ObservableObject {
     @Published var lastSpokenText = ""
 
     private let synthesizer = AVSpeechSynthesizer()
+    private var elevenLabsPlayer: AVAudioPlayer?
+    private var speakPromptGeneration: UInt64 = 0
 
     private init() {}
 
     var hasAPIKeys: Bool {
         let openAI = UserDefaults.standard.string(forKey: "openai_key") ?? ""
+        let k2 = UserDefaults.standard.string(forKey: "k2_think_key") ?? ""
         let elevenLabs = UserDefaults.standard.string(forKey: "elevenlabs_key") ?? ""
-        return !openAI.isEmpty && !elevenLabs.isEmpty
+        return !elevenLabs.isEmpty && (!openAI.isEmpty || !k2.isEmpty)
     }
 
     // MARK: - Voice Prompt (Fallback: Apple TTS)
 
     func speakPrompt(_ text: String) {
+        speakPromptGeneration &+= 1
+        let gen = speakPromptGeneration
         lastSpokenText = text
         isSpeaking = true
 
@@ -41,6 +46,7 @@ final class AIAgentService: ObservableObject {
 
         Task {
             try? await Task.sleep(for: .seconds(Double(text.count) / 15.0 + 1.0))
+            guard gen == speakPromptGeneration else { return }
             isSpeaking = false
         }
     }
@@ -50,24 +56,42 @@ final class AIAgentService: ObservableObject {
         speakPrompt(prompt)
     }
 
+    /// Clear phrases improve on-device STT + ElevenLabs Scribe fusion, then K2 reasoning.
+    func speakFallCheckPromptAsync(userName: String) async {
+        let prompt = """
+        \(userName), Guardian detected a possible fall. If you are okay, clearly say: I don't need help. \
+        If you need assistance, say: I need help.
+        """
+        let elevenLabsKey = UserDefaults.standard.string(forKey: "elevenlabs_key") ?? ""
+        if !elevenLabsKey.isEmpty {
+            await speakWithElevenLabs(prompt)
+        } else {
+            speakPrompt(prompt)
+            try? await Task.sleep(for: .seconds(6))
+        }
+    }
+
     func speakEmergencyDispatch(userName: String, location: String) {
         let prompt = "Dispatching emergency services for \(userName) at location \(location). Help is on the way."
         speakPrompt(prompt)
     }
 
     func stopSpeaking() {
+        speakPromptGeneration &+= 1
         synthesizer.stopSpeaking(at: .immediate)
+        elevenLabsPlayer?.stop()
+        elevenLabsPlayer = nil
         isSpeaking = false
+    }
+
+    /// Stops Apple TTS and any ElevenLabs playback (call when user dismisses fall alert).
+    func stopAllAudio() {
+        stopSpeaking()
     }
 
     // MARK: - OpenAI Integration (when API key available)
 
     func generateContextualMessage(event: FallEvent, profile: UserProfile, location: String) async -> String {
-        let openAIKey = UserDefaults.standard.string(forKey: "openai_key") ?? ""
-        guard !openAIKey.isEmpty else {
-            return buildFallbackMessage(event: event, profile: profile, location: location)
-        }
-
         let systemPrompt = """
         You are an emergency medical dispatcher AI. Generate a brief, calm emergency message \
         based on the fall detection data provided. Include the person's name, location, \
@@ -83,6 +107,31 @@ final class AIAgentService: ObservableObject {
         No movement for \(Int(event.stillnessDuration)) seconds.
         Severity: \(event.severity.rawValue).
         """
+
+        let k2Key = UserDefaults.standard.string(forKey: "k2_think_key") ?? ""
+        if !k2Key.isEmpty {
+            let baseRaw = UserDefaults.standard.string(forKey: "k2_think_base_url") ?? ""
+            let base = baseRaw.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+                ? Constants.API.k2ThinkDefaultBaseURL
+                : baseRaw
+            let modelStored = UserDefaults.standard.string(forKey: "k2_think_model") ?? ""
+            let model = modelStored.isEmpty ? Constants.API.k2ThinkDefaultModel : modelStored
+            if let content = await K2ThinkClient.chatCompletionJSON(
+                apiKey: k2Key,
+                baseURL: base,
+                model: model,
+                systemPrompt: systemPrompt,
+                userPrompt: userPrompt
+            )?.trimmingCharacters(in: .whitespacesAndNewlines),
+               !content.isEmpty {
+                return content
+            }
+        }
+
+        let openAIKey = UserDefaults.standard.string(forKey: "openai_key") ?? ""
+        guard !openAIKey.isEmpty else {
+            return buildFallbackMessage(event: event, profile: profile, location: location)
+        }
 
         do {
             let url = URL(string: "\(Constants.API.openAIBaseURL)/chat/completions")!
@@ -126,6 +175,9 @@ final class AIAgentService: ObservableObject {
     // MARK: - ElevenLabs TTS (when API key available)
 
     func speakWithElevenLabs(_ text: String) async {
+        speakPromptGeneration &+= 1
+        let gen = speakPromptGeneration
+
         let elevenLabsKey = UserDefaults.standard.string(forKey: "elevenlabs_key") ?? ""
         guard !elevenLabsKey.isEmpty else {
             speakPrompt(text)
@@ -155,17 +207,28 @@ final class AIAgentService: ObservableObject {
             request.httpBody = try JSONSerialization.data(withJSONObject: body)
             let (data, _) = try await URLSession.shared.data(for: request)
 
-            let tempURL = FileManager.default.temporaryDirectory.appendingPathComponent("tts_output.mp3")
+            guard gen == speakPromptGeneration else { return }
+
+            let tempURL = FileManager.default.temporaryDirectory.appendingPathComponent("tts_output-\(UUID().uuidString).mp3")
             try data.write(to: tempURL)
 
             let player = try AVAudioPlayer(contentsOf: tempURL)
+            elevenLabsPlayer = player
             player.play()
 
-            try? await Task.sleep(for: .seconds(player.duration + 0.5))
+            while player.isPlaying {
+                guard gen == speakPromptGeneration else { return }
+                try? await Task.sleep(nanoseconds: 50_000_000)
+            }
+            try? await Task.sleep(nanoseconds: 150_000_000)
         } catch {
+            guard gen == speakPromptGeneration else { return }
             speakPrompt(text)
         }
 
-        isSpeaking = false
+        if gen == speakPromptGeneration {
+            elevenLabsPlayer = nil
+            isSpeaking = false
+        }
     }
 }

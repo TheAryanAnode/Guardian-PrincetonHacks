@@ -8,6 +8,8 @@ struct FallAlertView: View {
     @State private var showVoiceCheck = false
     @State private var pulseScale: CGFloat = 1.0
     @State private var timer: Timer?
+    /// Until the voice prompt + listen step finishes, the 30s dispatch timer does not count down.
+    @State private var suspendEmergencyCountdown = true
 
     var body: some View {
         ZStack {
@@ -25,9 +27,15 @@ struct FallAlertView: View {
                             .padding(.horizontal, 20)
 
                         if showVoiceCheck {
-                            FallConfirmationView(state: state)
-                                .padding(.horizontal, 20)
-                                .transition(.opacity.combined(with: .scale(scale: 0.9)))
+                            FallConfirmationView(
+                                state: state,
+                                fallEvent: fallEvent,
+                                onVoicePipelineFinished: {
+                                    suspendEmergencyCountdown = false
+                                }
+                            )
+                            .padding(.horizontal, 20)
+                            .transition(.opacity.combined(with: .scale(scale: 0.9)))
                         }
                     }
                 }
@@ -37,10 +45,22 @@ struct FallAlertView: View {
                     .padding(.bottom, 40)
             }
         }
-        .onAppear { startCountdown() }
+        .onAppear {
+            startCountdown()
+            // Failsafe: if the voice pipeline never signals completion, still allow the countdown eventually.
+            Task {
+                try? await Task.sleep(for: .seconds(60))
+                await MainActor.run {
+                    if suspendEmergencyCountdown {
+                        suspendEmergencyCountdown = false
+                    }
+                }
+            }
+        }
         .onDisappear {
             timer?.invalidate()
             AudioClassificationService.shared.stopListening()
+            AIAgentService.shared.stopAllAudio()
         }
     }
 
@@ -119,6 +139,7 @@ struct FallAlertView: View {
                 isFullWidth: true
             ) {
                 timer?.invalidate()
+                AIAgentService.shared.stopAllAudio()
                 state.dismissFallAlert(outcome: .cancelledByUser)
             }
 
@@ -129,6 +150,7 @@ struct FallAlertView: View {
                 isFullWidth: true
             ) {
                 timer?.invalidate()
+                AIAgentService.shared.stopAllAudio()
                 state.dismissFallAlert(outcome: .helpRequested)
                 Task {
                     await EmergencyDispatchService.shared.dispatchEmergency(
@@ -145,6 +167,7 @@ struct FallAlertView: View {
 
         timer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { _ in
             Task { @MainActor in
+                guard !suspendEmergencyCountdown else { return }
                 if countdown > 0 {
                     countdown -= 1
                     LiveActivityManager.shared.updateActivity(
@@ -155,6 +178,7 @@ struct FallAlertView: View {
                     )
                 } else {
                     timer?.invalidate()
+                    AIAgentService.shared.stopAllAudio()
                     state.dismissFallAlert(outcome: .noResponse)
                     await EmergencyDispatchService.shared.dispatchEmergency(
                         event: fallEvent,
