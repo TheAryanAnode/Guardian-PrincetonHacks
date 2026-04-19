@@ -8,6 +8,9 @@ final class GuardianAppDelegate: NSObject, UIApplicationDelegate, UNUserNotifica
         didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil
     ) -> Bool {
         UNUserNotificationCenter.current().delegate = self
+        Task { @MainActor in
+            WatchConnectivityService.shared.activate()
+        }
         return true
     }
 

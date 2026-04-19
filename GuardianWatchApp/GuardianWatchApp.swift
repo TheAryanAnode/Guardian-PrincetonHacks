@@ -47,9 +47,9 @@ struct GuardianWatchApp: App {
 /// the small slice of behavior that SwiftUI scenePhase can't express.
 final class GuardianAppDelegate: NSObject, WKApplicationDelegate {
     func applicationDidFinishLaunching() {
-        // Kick off the recurring background refresh chain.
         Task { @MainActor in
             BackgroundRefreshService.shared.scheduleNextRefresh()
+            WatchConnectivityService.shared.activateIfPossible()
         }
     }
 
