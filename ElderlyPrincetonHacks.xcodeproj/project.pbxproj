@@ -7,7 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		E7A1BF001F8DDB5E00ACBE01 /* GuardianLiveActivityExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = E7A1PRD01F8DDB5E00ACBE01 /* GuardianLiveActivityExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		93C6772A2F947955008CC182 /* GuardianWatch Watch App.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = 93C677202F947953008CC182 /* GuardianWatch Watch App.app */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -25,23 +25,33 @@
 			remoteGlobalIDString = 92E9273C2F8DDB5C00ACBEFF;
 			remoteInfo = ElderlyPrincetonHacks;
 		};
-		E7A1PX001F8DDB5E00ACBE01 /* PBXContainerItemProxy */ = {
+		93C677282F947955008CC182 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 92E927352F8DDB5C00ACBEFF /* Project object */;
 			proxyType = 1;
-			remoteGlobalIDString = E7A1NT001F8DDB5E00ACBE01;
-			remoteInfo = GuardianLiveActivityExtension;
+			remoteGlobalIDString = 93C6771F2F947953008CC182;
+			remoteInfo = "GuardianWatch Watch App";
 		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
+		93C6772E2F947955008CC182 /* Embed Watch Content */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "$(CONTENTS_FOLDER_PATH)/Watch";
+			dstSubfolderSpec = 16;
+			files = (
+				93C6772A2F947955008CC182 /* GuardianWatch Watch App.app in Embed Watch Content */,
+			);
+			name = "Embed Watch Content";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		E7A1CPY01F8DDB5E00ACBE01 /* Embed Foundation Extensions */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
 			dstPath = "";
 			dstSubfolderSpec = 13;
 			files = (
-				E7A1BF001F8DDB5E00ACBE01 /* GuardianLiveActivityExtension.appex in Embed Foundation Extensions */,
 			);
 			name = "Embed Foundation Extensions";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -52,6 +62,7 @@
 		92E9273D2F8DDB5C00ACBEFF /* ElderlyPrincetonHacks.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ElderlyPrincetonHacks.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		92E9274A2F8DDB5E00ACBEFF /* ElderlyPrincetonHacksTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ElderlyPrincetonHacksTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		92E927542F8DDB5E00ACBEFF /* ElderlyPrincetonHacksUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ElderlyPrincetonHacksUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		93C677202F947953008CC182 /* GuardianWatch Watch App.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "GuardianWatch Watch App.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		E7A1PRD01F8DDB5E00ACBE01 /* GuardianLiveActivityExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = GuardianLiveActivityExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -69,6 +80,11 @@
 		92E927572F8DDB5E00ACBEFF /* ElderlyPrincetonHacksUITests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = ElderlyPrincetonHacksUITests;
+			sourceTree = "<group>";
+		};
+		93AF2B902F94607D00E5ACC3 /* GuardianWatchApp */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = GuardianWatchApp;
 			sourceTree = "<group>";
 		};
 		E7A1WS001F8DDB5E00ACBE01 /* GuardianLiveActivityExtension */ = {
@@ -100,6 +116,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		93C6771D2F947953008CC182 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		E7A1FWK01F8DDB5E00ACBE01 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -117,6 +140,7 @@
 				E7A1WS001F8DDB5E00ACBE01 /* GuardianLiveActivityExtension */,
 				92E9274D2F8DDB5E00ACBEFF /* ElderlyPrincetonHacksTests */,
 				92E927572F8DDB5E00ACBEFF /* ElderlyPrincetonHacksUITests */,
+				93AF2B902F94607D00E5ACC3 /* GuardianWatchApp */,
 				92E9273E2F8DDB5C00ACBEFF /* Products */,
 			);
 			sourceTree = "<group>";
@@ -128,6 +152,7 @@
 				E7A1PRD01F8DDB5E00ACBE01 /* GuardianLiveActivityExtension.appex */,
 				92E9274A2F8DDB5E00ACBEFF /* ElderlyPrincetonHacksTests.xctest */,
 				92E927542F8DDB5E00ACBEFF /* ElderlyPrincetonHacksUITests.xctest */,
+				93C677202F947953008CC182 /* GuardianWatch Watch App.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -143,11 +168,12 @@
 				92E9273A2F8DDB5C00ACBEFF /* Frameworks */,
 				92E9273B2F8DDB5C00ACBEFF /* Resources */,
 				E7A1CPY01F8DDB5E00ACBE01 /* Embed Foundation Extensions */,
+				93C6772E2F947955008CC182 /* Embed Watch Content */,
 			);
 			buildRules = (
 			);
 			dependencies = (
-				E7A1DEP01F8DDB5E00ACBE01 /* PBXTargetDependency */,
+				93C677292F947955008CC182 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				92E9273F2F8DDB5C00ACBEFF /* ElderlyPrincetonHacks */,
@@ -205,6 +231,28 @@
 			productReference = 92E927542F8DDB5E00ACBEFF /* ElderlyPrincetonHacksUITests.xctest */;
 			productType = "com.apple.product-type.bundle.ui-testing";
 		};
+		93C6771F2F947953008CC182 /* GuardianWatch Watch App */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 93C6772B2F947955008CC182 /* Build configuration list for PBXNativeTarget "GuardianWatch Watch App" */;
+			buildPhases = (
+				93C6771C2F947953008CC182 /* Sources */,
+				93C6771D2F947953008CC182 /* Frameworks */,
+				93C6771E2F947953008CC182 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				93AF2B902F94607D00E5ACC3 /* GuardianWatchApp */,
+			);
+			name = "GuardianWatch Watch App";
+			packageProductDependencies = (
+			);
+			productName = "GuardianWatch Watch App";
+			productReference = 93C677202F947953008CC182 /* GuardianWatch Watch App.app */;
+			productType = "com.apple.product-type.application";
+		};
 		E7A1NT001F8DDB5E00ACBE01 /* GuardianLiveActivityExtension */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = E7A1CFGL1F8DDB5E00ACBE01 /* Build configuration list for PBXNativeTarget "GuardianLiveActivityExtension" */;
@@ -248,6 +296,9 @@
 						CreatedOnToolsVersion = 26.4;
 						TestTargetID = 92E9273C2F8DDB5C00ACBEFF;
 					};
+					93C6771F2F947953008CC182 = {
+						CreatedOnToolsVersion = 26.4.1;
+					};
 					E7A1NT001F8DDB5E00ACBE01 = {
 						CreatedOnToolsVersion = 26.4;
 					};
@@ -271,6 +322,7 @@
 				E7A1NT001F8DDB5E00ACBE01 /* GuardianLiveActivityExtension */,
 				92E927492F8DDB5E00ACBEFF /* ElderlyPrincetonHacksTests */,
 				92E927532F8DDB5E00ACBEFF /* ElderlyPrincetonHacksUITests */,
+				93C6771F2F947953008CC182 /* GuardianWatch Watch App */,
 			);
 		};
 /* End PBXProject section */
@@ -291,6 +343,13 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		92E927522F8DDB5E00ACBEFF /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		93C6771E2F947953008CC182 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -328,6 +387,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		93C6771C2F947953008CC182 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		E7A1SRC01F8DDB5E00ACBE01 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -348,10 +414,10 @@
 			target = 92E9273C2F8DDB5C00ACBEFF /* ElderlyPrincetonHacks */;
 			targetProxy = 92E927552F8DDB5E00ACBEFF /* PBXContainerItemProxy */;
 		};
-		E7A1DEP01F8DDB5E00ACBE01 /* PBXTargetDependency */ = {
+		93C677292F947955008CC182 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = E7A1NT001F8DDB5E00ACBE01 /* GuardianLiveActivityExtension */;
-			targetProxy = E7A1PX001F8DDB5E00ACBE01 /* PBXContainerItemProxy */;
+			target = 93C6771F2F947953008CC182 /* GuardianWatch Watch App */;
+			targetProxy = 93C677282F947955008CC182 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -408,7 +474,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 26.4;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.3;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
@@ -465,7 +531,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 26.4;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.3;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
@@ -482,14 +548,14 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = N4H3KUZN2C;
+				DEVELOPMENT_TEAM = 63Y25478FJ;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleURLTypes = "({CFBundleURLName=guardian;CFBundleURLSchemes=(guardian);})";
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Guardian uses your location to help emergency responders reach you quickly after a fall.";
 				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Guardian uses your microphone to confirm whether a detected fall is real.";
 				INFOPLIST_KEY_NSSpeechRecognitionUsageDescription = "Guardian uses speech recognition to hear if you ask for help after a possible fall.";
-				INFOPLIST_KEY_NSSupportsLiveActivities = YES;
+				INFOPLIST_KEY_NSSupportsLiveActivities = NO;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -500,7 +566,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.aryan.ElderlyPrincetonHacks;
+				PRODUCT_BUNDLE_IDENTIFIER = com.pulkitchaudhary.guardian;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
@@ -519,14 +585,14 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = N4H3KUZN2C;
+				DEVELOPMENT_TEAM = 63Y25478FJ;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleURLTypes = "({CFBundleURLName=guardian;CFBundleURLSchemes=(guardian);})";
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Guardian uses your location to help emergency responders reach you quickly after a fall.";
 				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Guardian uses your microphone to confirm whether a detected fall is real.";
 				INFOPLIST_KEY_NSSpeechRecognitionUsageDescription = "Guardian uses speech recognition to hear if you ask for help after a possible fall.";
-				INFOPLIST_KEY_NSSupportsLiveActivities = YES;
+				INFOPLIST_KEY_NSSupportsLiveActivities = NO;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -537,7 +603,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.aryan.ElderlyPrincetonHacks;
+				PRODUCT_BUNDLE_IDENTIFIER = com.pulkitchaudhary.guardian;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
@@ -555,9 +621,9 @@
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = N4H3KUZN2C;
+				DEVELOPMENT_TEAM = "";
 				GENERATE_INFOPLIST_FILE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 26.4;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.3;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.example.apple-samplecode.ElderlyPrincetonHacksTests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -577,9 +643,9 @@
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = N4H3KUZN2C;
+				DEVELOPMENT_TEAM = "";
 				GENERATE_INFOPLIST_FILE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 26.4;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.3;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.example.apple-samplecode.ElderlyPrincetonHacksTests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -598,7 +664,7 @@
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = N4H3KUZN2C;
+				DEVELOPMENT_TEAM = "";
 				GENERATE_INFOPLIST_FILE = YES;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.example.apple-samplecode.ElderlyPrincetonHacksUITests";
@@ -618,7 +684,7 @@
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = N4H3KUZN2C;
+				DEVELOPMENT_TEAM = "";
 				GENERATE_INFOPLIST_FILE = YES;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.example.apple-samplecode.ElderlyPrincetonHacksUITests";
@@ -633,23 +699,103 @@
 			};
 			name = Release;
 		};
+		93C6772C2F947955008CC182 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = GuardianWatchApp/GuardianWatchApp.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 63Y25478FJ;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = GuardianWatch;
+				INFOPLIST_KEY_NSHealthShareUsageDescription = "Guardian uses workout sessions to monitor for falls in the background.";
+				INFOPLIST_KEY_NSHealthUpdateUsageDescription = "Guardian needs to start workout sessions to monitor for falls.";
+				INFOPLIST_KEY_NSLocationAlwaysAndWhenInUseUsageDescription = "Guardian shares your location with emergency contacts during a fall.";
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Guardian shares your location with emergency contacts.";
+				INFOPLIST_KEY_NSMotionUsageDescription = "Guardian uses motion to detect falls.";
+				INFOPLIST_KEY_UIBackgroundModes = "workout-processing location";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
+				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = com.pulkitchaudhary.guardian;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.pulkitchaudhary.guardian.watchkitapp;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = watchos;
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 4;
+				WATCHOS_DEPLOYMENT_TARGET = 26.3;
+			};
+			name = Debug;
+		};
+		93C6772D2F947955008CC182 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = GuardianWatchApp/GuardianWatchApp.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 63Y25478FJ;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = GuardianWatch;
+				INFOPLIST_KEY_NSHealthShareUsageDescription = "Guardian uses workout sessions to monitor for falls in the background.";
+				INFOPLIST_KEY_NSHealthUpdateUsageDescription = "Guardian needs to start workout sessions to monitor for falls.";
+				INFOPLIST_KEY_NSLocationAlwaysAndWhenInUseUsageDescription = "Guardian shares your location with emergency contacts during a fall.";
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Guardian shares your location with emergency contacts.";
+				INFOPLIST_KEY_NSMotionUsageDescription = "Guardian uses motion to detect falls.";
+				INFOPLIST_KEY_UIBackgroundModes = "workout-processing location";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
+				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = com.pulkitchaudhary.guardian;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.pulkitchaudhary.guardian.watchkitapp;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = watchos;
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 4;
+				WATCHOS_DEPLOYMENT_TARGET = 26.3;
+			};
+			name = Release;
+		};
 		E7A1EXT1DBG2F8DDB5E00ACBE01 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				APPLICATION_EXTENSION_API_ONLY = YES;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = N4H3KUZN2C;
+				DEVELOPMENT_TEAM = 63Y25478FJ;
 				GENERATE_INFOPLIST_FILE = NO;
-				INFOPLIST_FILE = GuardianLiveActivityExtension-Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 26.4;
+				INFOPLIST_FILE = "GuardianLiveActivityExtension-Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 26.3;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.aryan.ElderlyPrincetonHacks.GuardianLiveActivity;
+				PRODUCT_BUNDLE_IDENTIFIER = com.pulkitchaudhary.guardian.GuardianLiveActivity;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = NO;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
@@ -666,17 +812,17 @@
 				APPLICATION_EXTENSION_API_ONLY = YES;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = N4H3KUZN2C;
+				DEVELOPMENT_TEAM = 63Y25478FJ;
 				GENERATE_INFOPLIST_FILE = NO;
-				INFOPLIST_FILE = GuardianLiveActivityExtension-Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 26.4;
+				INFOPLIST_FILE = "GuardianLiveActivityExtension-Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 26.3;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.aryan.ElderlyPrincetonHacks.GuardianLiveActivity;
+				PRODUCT_BUNDLE_IDENTIFIER = com.pulkitchaudhary.guardian.GuardianLiveActivity;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = NO;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
@@ -722,6 +868,15 @@
 			buildConfigurations = (
 				92E927652F8DDB5E00ACBEFF /* Debug */,
 				92E927662F8DDB5E00ACBEFF /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		93C6772B2F947955008CC182 /* Build configuration list for PBXNativeTarget "GuardianWatch Watch App" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				93C6772C2F947955008CC182 /* Debug */,
+				93C6772D2F947955008CC182 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

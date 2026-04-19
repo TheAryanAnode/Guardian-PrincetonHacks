@@ -4,6 +4,8 @@ build/
 *.xcuserstate
 *.xcworkspace/xcuserdata/
 *.xcodeproj/xcuserdata/
+*.xcodeproj/project.xcworkspace/xcuserdata/
+*.xcodeproj/*.backup
 
 # Local secrets and config
 .env
