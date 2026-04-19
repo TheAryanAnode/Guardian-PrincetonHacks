@@ -61,6 +61,7 @@ final class AppState {
     func recordFallEvent(_ event: FallEvent) {
         fallHistory.insert(event, at: 0)
         saveFallHistory()
+        WatchConnectivityService.shared.sendFallEvent(event, profile: userProfile)
     }
 
     func dismissFallAlert(outcome: FallOutcome) {
