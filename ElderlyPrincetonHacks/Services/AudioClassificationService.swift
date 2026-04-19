@@ -182,27 +182,68 @@ struct AudioResult {
     let speechDetected: String?
     let confidence: Double
 
-    var containsHelpRequest: Bool {
-        let speech = speechDetected?.lowercased() ?? ""
-        if speech.contains("don't need help") || speech.contains("dont need help") || speech.contains("do not need help") {
-            return false
+    /// Strict phrase / word-boundary matching so STT noise doesn’t trigger false cancels (e.g. “ok” inside other words).
+    var fallVoiceIntent: FallVoiceIntent? {
+        guard let raw = speechDetected?.trimmingCharacters(in: .whitespacesAndNewlines),
+              raw.count >= 3 else { return nil }
+        let text = raw.lowercased()
+        if VoiceCommandMatcher.matchesAny(text, patterns: VoiceCommandMatcher.cancelPatterns) {
+            return .cancel
         }
-        if speech.contains("i need help") || speech.contains("need help") || speech.contains("send help") {
-            return true
+        if VoiceCommandMatcher.matchesAny(text, patterns: VoiceCommandMatcher.helpPatterns) {
+            return .requestHelp
         }
-        let helpKeywords = ["fallen", "hurt", "pain", "emergency", "ambulance", "call 911", "call for help"]
-        return helpKeywords.contains { speech.contains($0) }
+        return nil
     }
 
-    var containsDismissal: Bool {
-        let speech = speechDetected?.lowercased() ?? ""
-        if speech.contains("don't need help") || speech.contains("dont need help") || speech.contains("do not need help") {
-            return true
-        }
-        let okKeywords = [
-            "yes", "yeah", "yep", "okay", "ok", "fine", "i'm fine", "im fine",
-            "i'm ok", "im ok", "good", "alright", "all good", "false alarm"
-        ]
-        return okKeywords.contains { speech.contains($0) }
+    var containsHelpRequest: Bool { fallVoiceIntent == .requestHelp }
+
+    var containsDismissal: Bool { fallVoiceIntent == .cancel }
+}
+
+enum FallVoiceIntent {
+    case cancel
+    case requestHelp
+}
+
+private enum VoiceCommandMatcher {
+    /// Checked first: cancel / I’m OK / don’t need help
+    static let cancelPatterns: [String] = [
+        "\\bcancel\\b",
+        "\\bnever\\s+mind\\b",
+        "\\bfalse\\s+alarm\\b",
+        "\\bi\\s*'?m\\s+ok\\b",
+        "\\bi\\s+am\\s+ok\\b",
+        "\\bim\\s+ok\\b",
+        "\\bdon'?t\\s+need\\s+help\\b",
+        "\\bdont\\s+need\\s+help\\b",
+        "\\bdo\\s+not\\s+need\\s+help\\b",
+        "\\bno\\s+help\\b",
+        "\\bi'?m\\s+fine\\b",
+        "\\bi\\s+am\\s+fine\\b",
+        "\\ball\\s+good\\b"
+    ]
+
+    static let helpPatterns: [String] = [
+        "\\bhelp\\s+me\\b",
+        "\\bi\\s+need\\s+help\\b",
+        "\\bneed\\s+help\\b",
+        "\\bget\\s+help\\b",
+        "\\bsend\\s+help\\b",
+        "\\bcall\\s+for\\s+help\\b",
+        "\\bcall\\s+911\\b",
+        "\\b911\\b",
+        "\\bemergency\\b",
+        "\\bambulance\\b"
+    ]
+
+    static func matchesAny(_ text: String, patterns: [String]) -> Bool {
+        patterns.contains { matches(text, pattern: $0) }
+    }
+
+    private static func matches(_ text: String, pattern: String) -> Bool {
+        guard let re = try? NSRegularExpression(pattern: pattern, options: []) else { return false }
+        let range = NSRange(text.startIndex..., in: text)
+        return re.firstMatch(in: text, options: [], range: range) != nil
     }
 }

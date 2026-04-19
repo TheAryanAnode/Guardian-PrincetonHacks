@@ -107,6 +107,7 @@ final class AppState {
     func recordFallEvent(_ event: FallEvent) {
         fallHistory.insert(event, at: 0)
         saveFallHistory()
+        FallFirestoreService.shared.syncFallEvent(event, profile: userProfile)
     }
 
     func dismissFallAlert(outcome: FallOutcome) {

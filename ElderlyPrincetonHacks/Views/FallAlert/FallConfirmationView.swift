@@ -12,6 +12,8 @@ struct FallConfirmationView: View {
     @State private var k2Assessment: CrisisVoiceAssessment?
 
     var fallEvent: FallEvent
+    /// Called when TTS + listen + optional K2 UI step finishes — parent can start the emergency countdown.
+    var onVoicePipelineFinished: () -> Void = {}
 
     var body: some View {
         VStack(spacing: 20) {
@@ -76,7 +78,7 @@ struct FallConfirmationView: View {
     private var statusLabel: String {
         if aiAgent.isSpeaking { return "SPEAKING…" }
         if isListeningForResponse { return "LISTENING…" }
-        if k2Assessment != nil { return "REASONING COMPLETE" }
+        if k2Assessment != nil { return "REASONING READY" }
         return "PROCESSING…"
     }
 
@@ -98,6 +100,12 @@ struct FallConfirmationView: View {
     }
 
     private func runVoiceCheck() async {
+        defer {
+            Task { @MainActor in
+                onVoicePipelineFinished()
+            }
+        }
+
         AudioClassificationService.shared.stopListening()
         showWaveform = true
         k2Assessment = nil
@@ -107,7 +115,7 @@ struct FallConfirmationView: View {
         await aiAgent.speakFallCheckPromptAsync(userName: userName)
 
         isListeningForResponse = true
-        let result = await audioService.startListening(duration: 5)
+        let result = await audioService.startListening(duration: 6)
         let transcript = result.speechDetected?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
         responseText = transcript
 
@@ -129,38 +137,18 @@ struct FallConfirmationView: View {
                 model: model
             ) {
                 k2Assessment = parsed
-                if !parsed.spokenGuidance.isEmpty {
-                    await aiAgent.speakWithElevenLabs(parsed.spokenGuidance)
-                }
             }
         }
 
-        if let k2 = k2Assessment, k2.confidence >= 0.62 {
-            switch k2.intent {
-            case .all_clear:
-                state.dismissFallAlert(outcome: .falseAlarm)
-                return
-            case .help_needed:
-                var updated = fallSnapshot
-                updated.voiceResponseReceived = true
-                updated.voiceResponse = transcript
-                state.dismissFallAlert(outcome: .helpRequested)
-                await EmergencyDispatchService.shared.dispatchEmergency(
-                    event: updated,
-                    profile: state.userProfile
-                )
-                return
-            case .uncertain:
-                break
-            }
-        }
+        // Do not auto-dismiss from K2 — only explicit voice phrases or buttons (avoids false closes).
+        guard let intent = result.fallVoiceIntent else { return }
 
-        if result.containsDismissal {
+        switch intent {
+        case .cancel:
+            AIAgentService.shared.stopAllAudio()
             state.dismissFallAlert(outcome: .cancelledByUser)
-            return
-        }
-
-        if result.containsHelpRequest {
+        case .requestHelp:
+            AIAgentService.shared.stopAllAudio()
             var updated = fallSnapshot
             updated.voiceResponseReceived = true
             updated.voiceResponse = transcript

@@ -10,6 +10,8 @@ final class AIAgentService: ObservableObject {
     @Published var lastSpokenText = ""
 
     private let synthesizer = AVSpeechSynthesizer()
+    private var elevenLabsPlayer: AVAudioPlayer?
+    private var speakPromptGeneration: UInt64 = 0
 
     private init() {}
 
@@ -23,6 +25,8 @@ final class AIAgentService: ObservableObject {
     // MARK: - Voice Prompt (Fallback: Apple TTS)
 
     func speakPrompt(_ text: String) {
+        speakPromptGeneration &+= 1
+        let gen = speakPromptGeneration
         lastSpokenText = text
         isSpeaking = true
 
@@ -42,6 +46,7 @@ final class AIAgentService: ObservableObject {
 
         Task {
             try? await Task.sleep(for: .seconds(Double(text.count) / 15.0 + 1.0))
+            guard gen == speakPromptGeneration else { return }
             isSpeaking = false
         }
     }
@@ -72,8 +77,16 @@ final class AIAgentService: ObservableObject {
     }
 
     func stopSpeaking() {
+        speakPromptGeneration &+= 1
         synthesizer.stopSpeaking(at: .immediate)
+        elevenLabsPlayer?.stop()
+        elevenLabsPlayer = nil
         isSpeaking = false
+    }
+
+    /// Stops Apple TTS and any ElevenLabs playback (call when user dismisses fall alert).
+    func stopAllAudio() {
+        stopSpeaking()
     }
 
     // MARK: - OpenAI Integration (when API key available)
@@ -162,6 +175,9 @@ final class AIAgentService: ObservableObject {
     // MARK: - ElevenLabs TTS (when API key available)
 
     func speakWithElevenLabs(_ text: String) async {
+        speakPromptGeneration &+= 1
+        let gen = speakPromptGeneration
+
         let elevenLabsKey = UserDefaults.standard.string(forKey: "elevenlabs_key") ?? ""
         guard !elevenLabsKey.isEmpty else {
             speakPrompt(text)
@@ -191,17 +207,28 @@ final class AIAgentService: ObservableObject {
             request.httpBody = try JSONSerialization.data(withJSONObject: body)
             let (data, _) = try await URLSession.shared.data(for: request)
 
-            let tempURL = FileManager.default.temporaryDirectory.appendingPathComponent("tts_output.mp3")
+            guard gen == speakPromptGeneration else { return }
+
+            let tempURL = FileManager.default.temporaryDirectory.appendingPathComponent("tts_output-\(UUID().uuidString).mp3")
             try data.write(to: tempURL)
 
             let player = try AVAudioPlayer(contentsOf: tempURL)
+            elevenLabsPlayer = player
             player.play()
 
-            try? await Task.sleep(for: .seconds(player.duration + 0.5))
+            while player.isPlaying {
+                guard gen == speakPromptGeneration else { return }
+                try? await Task.sleep(nanoseconds: 50_000_000)
+            }
+            try? await Task.sleep(nanoseconds: 150_000_000)
         } catch {
+            guard gen == speakPromptGeneration else { return }
             speakPrompt(text)
         }
 
-        isSpeaking = false
+        if gen == speakPromptGeneration {
+            elevenLabsPlayer = nil
+            isSpeaking = false
+        }
     }
 }
